@@ -1,9 +1,19 @@
-import { Devvit, Context } from '@devvit/public-api';
+import { Devvit, Context, useChannel, useState } from '@devvit/public-api';
 
-export const MenuPage = (context: Context,setPage:any) => {
+type RealtimeMessage = {
+  payload : {question:number},
+  session : string
+}
+
+const mySession = Math.random().toString(36).substring(2, 10);
+
+export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
+
+
     const changePage = (page:string) => {
         setPage(page)
     }
+
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
@@ -39,7 +49,9 @@ export const MenuPage = (context: Context,setPage:any) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-          <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" onPress={()=>changePage("play")}  border="thick">
+          <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" 
+          onPress={()=>{changePage("play")}}  
+          border="thick">
               <text color="white" size="large" weight="bold">Play</text>
           </hstack>
         </zstack>
@@ -56,7 +68,7 @@ export const MenuPage = (context: Context,setPage:any) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-          <hstack width="250px" height="50px" backgroundColor="white" cornerRadius="full" alignment="middle center" borderColor="black" onPress={()=>changePage("leaderboard")} border="thick">
+          <hstack width="250px" height="50px" backgroundColor="white" cornerRadius="full" alignment="middle center" borderColor="black" onPress={async()=>{changePage("leaderboard");const data = await context.redis.zAdd('quetionNumber',{member:'10',score:2});console.log(data)}} border="thick">
               <text color="black" size="large" weight="bold">LEADERBOARD</text>
           </hstack>
         </zstack>

@@ -1,29 +1,99 @@
-import { Devvit, Context, useState } from '@devvit/public-api';
+import { Devvit, Context, useState, useAsync, useChannel } from '@devvit/public-api';
 import { Button } from '../components/button.js';
-const question = "Q: What are the names of Zaid's kittens?"
+import { ModalButton } from '../components/modalButton.js';
+import { shuffleArray } from '../utils/shuffleOptions.js';
+import OptionsList from '../components/options.js';
+import Modal from '../components/modal.js';
 
+Devvit.configure({
+  realtime: true,
+  redis: true,
+});
 
+type Question = {
+  question: string;
+  incorrect_answers: string[];
+  correct_answer: string;
+};
 
-export const PlayPage = (context: Context,setPage:any) => {
-    
-    const [selected, setSelected] = useState<number | null>(null);
-    const changePage = (page:string) => {
-        setPage(page)
+type FormattedQuestions = Record<string, Question>;
+
+type PlayPageProps = {
+  context: Context;
+  setPage: (page: string) => void;
+};
+
+export const PlayPage = ({ context, setPage }: PlayPageProps) => {
+  let question: string | undefined;
+
+  // Async hook to fetch the question number from Redis
+  const { data: keyData, loading: keyLoading } = useAsync(async () => {
+    const allKey = await context.redis.zRange('quetionNumber', 0, 1, { by: 'score' });
+    return allKey;
+  });
+
+  const questionNumber: string | undefined = keyData ? keyData[0].member : undefined;
+
+  // Async hook to fetch all questions from Redis
+  const { data: questionsData, loading: questionsLoading, error } = useAsync(async () => {
+    return (await context.redis.get('questions')) as string;
+  });
+
+  const formattedQuestions: FormattedQuestions | undefined = questionsData ? JSON.parse(questionsData) : undefined;
+
+  question = questionNumber && formattedQuestions ? atob(formattedQuestions[questionNumber].question) : undefined;
+
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answer, setAnswer] = useState<string>('');
+  const [modal, setModal] = useState<boolean>(false);
+
+  const changePage = (page: string) => {
+    setPage(page);
+  };
+
+  // Prepare options for the question
+  const allOptions =
+    questionNumber && formattedQuestions
+      ? formattedQuestions[questionNumber].incorrect_answers.concat(
+          formattedQuestions[questionNumber].correct_answer
+        )
+      : [];
+
+  const options: Array<{ option: string; background: string; text: string }> = [];
+
+  questionNumber &&
+    formattedQuestions &&
+    allOptions.forEach((answer: string) => {
+      options.push({ option: atob(answer), background: 'white', text: 'black' });
+    });
+
+  const handleSubmit = async () => {
+    if (
+      questionNumber &&
+      formattedQuestions &&
+      answer === atob(formattedQuestions[questionNumber].correct_answer).toString()
+    ) {
+      setModal(true);
+      setAnswer('right');
+      try {
+        const data = await context.redis.zAdd('quetionNumber', { member: questionNumber, score: 2 });
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      setModal(true);
+      setAnswer('wrong');
     }
+  };
 
-    const options = [
-      { option: 'Loki Poki', background: 'white', text: 'black' },
-      { option: 'Anurag Zaid', background: 'white', text: 'black' },
-      { option: 'Karan Arjun', background: 'white', text: 'black' },
-      { option: 'Larry Lawrie', background: 'white', text: 'black' },
-    ];
-    return ( 
-        <blocks>
-        <vstack backgroundColor="#56CCF2" height="100%" alignment="center" grow>
+  return (
+    <blocks>
+      <zstack height="100%" width="100%">
+        <vstack backgroundColor="#56CCF2" height="100%" width="100%" alignment="center" grow>
           <spacer size="medium" />
           <hstack alignment="end" width="90%" gap="large">
             <zstack alignment="start top">
-              {/* Shadow */}
               <vstack width="100%" height="100%">
                 <spacer height="3px" />
                 <hstack width="100%" height="100%">
@@ -37,7 +107,7 @@ export const PlayPage = (context: Context,setPage:any) => {
                 cornerRadius="small"
                 border="thick"
                 borderColor="black"
-                onPress={()=>changePage("none")}
+                onPress={() => changePage('none')}
               >
                 <icon name="close-fill" color="white" size="large"></icon>
               </hstack>
@@ -54,33 +124,63 @@ export const PlayPage = (context: Context,setPage:any) => {
 
           <spacer />
 
-          <text
-            overflow="ellipsis"
-            color="white"
-            size="xxlarge"
-            alignment="center"
-            wrap
-            width="100%"
-            weight="bold"
-          >
-            {question}
-          </text>
+          <text>{answer}</text>
 
+          {questionsLoading && keyLoading && (
+            <text
+              overflow="ellipsis"
+              color="white"
+              size="xxlarge"
+              alignment="center"
+              wrap
+              width="100%"
+              weight="bold"
+            >
+              Loading
+            </text>
+          )}
+
+          {keyData && questionsData && (
+            <text
+              overflow="ellipsis"
+              color="white"
+              size="xxlarge"
+              alignment="center"
+              wrap
+              width="100%"
+              weight="bold"
+            >
+              {question!}
+            </text>
+          )}
           <spacer />
 
-          {options.map((item, index) => {
-            return Button(
-              item.option,
-              index === selected ? '#D93A00' : item.background,
-              index === selected ? 'white' : item.text,
-              () => setSelected(index)
-            );
-          })}
-
+          {keyData &&
+            questionsData &&
+              <OptionsList
+          options={options}
+          selected={selected}
+          onSelect={(index, option) => {
+          setSelected(index);
+          setAnswer(option);
+        }}
+      />}
           <spacer size="small" />
-          {Button('Submit', '#D93A00', 'white', () => setSelected(null))}
-        </vstack>
-      </blocks>
-            )
 
-  }
+          {keyData && questionsData && (
+            <Button label="Submit" background="#D93A00" textColor="white" onClick={handleSubmit} />
+          )}
+        </vstack>
+
+        {modal && 
+         <Modal
+         answer={answer}
+         onClose={() => setPage('')}
+         onRetry={() => setPage('')}
+         onPost={() => setPage('')}
+       />
+        }
+      </zstack>
+    </blocks>
+  );
+};
