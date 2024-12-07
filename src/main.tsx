@@ -6,144 +6,31 @@ import { PlayPage } from './pages/play.js';
 import { MenuPage } from './pages/menu.js';
 import service from './service/service.js';
 import { addIsAvailableProperty } from './utils/addIsAvailableField.js';
+import { shuffleArray } from './utils/shuffleOptions.js';
 
 Devvit.configure({
   redditAPI: true,
   redis:true,
   http:true
 });
-const results =  [
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "U3BvcnRz",
-        "question": "SG93IG1hbnkgcG9pbnRzIGRpZCBMZUJyb24gSmFtZXMgc2NvcmUgaW4gaGlzIGZpcnN0IE5CQSBnYW1lPw==",
-        "correct_answer": "MjU=",
-        "incorrect_answers": [
-            "MTk=",
-            "Njk=",
-            "NDE="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogVmlkZW8gR2FtZXM=",
-        "question": "V2hhdCB3YXMgRnJhbmsgV2VzdCdzIGpvYiBpbiAiRGVhZCBSaXNpbmciPw==",
-        "correct_answer": "UGhvdG9qb3VybmFsaXN0",
-        "incorrect_answers": [
-            "SmFuaXRvcg==",
-            "Q2hlZg==",
-            "VGF4aSBEcml2ZXI="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogSmFwYW5lc2UgQW5pbWUgJiBNYW5nYQ==",
-        "question": "V2hvIGlzIHRoZSBtYWluIGNoYXJhY3RlciB3aXRoIHllbGxvdyBoYWlyIGluIHRoZSBhbmltZSBOYXJ1dG8/",
-        "correct_answer": "TmFydXRv",
-        "incorrect_answers": [
-            "VGVuIFRlbg==",
-            "U2FzdWtl",
-            "S2FrYXNoaQ=="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogRmlsbQ==",
-        "question": "SW4gdGhlIG1vdmllICJWIGZvciBWZW5kZXR0YSwiIHdoYXQgaXMgdGhlIGRhdGUgdGhhdCBtYXNrZWQgdmlnaWxhbnRlICJWIiB1cmdlcyBwZW9wbGUgdG8gcmVtZW1iZXI/",
-        "correct_answer": "Tm92ZW1iZXIgNXRo",
-        "incorrect_answers": [
-            "Tm92ZW1iZXIgNnRo",
-            "Tm92ZW1iZXIgNHRo",
-            "U2VwdGVtYmVyIDV0aA=="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogSmFwYW5lc2UgQW5pbWUgJiBNYW5nYQ==",
-        "question": "V2hvIGlzIHRoZSBtYWluIGhlcm9pbmUgb2YgdGhlIGFuaW1lLCBGdWxsIE1ldGFsIFBhbmljIQ==",
-        "correct_answer": "S2FuYW1lIENoaWRvcmk=",
-        "incorrect_answers": [
-            "VGVsZXRoYSBUZXN0YXJvc3Nh",
-            "TWVsaXNzYSBNYW8=",
-            "S3lva28gVG9raXdh"
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "U3BvcnRz",
-        "question": "V2hhdCBpcyB0aGUgbW9zdCBjb21tb24gdHlwZSBvZiBwaXRjaCB0aHJvd24gYnkgcGl0Y2hlcnMgaW4gYmFzZWJhbGw/",
-        "correct_answer": "RmFzdGJhbGw=",
-        "incorrect_answers": [
-            "U2xvd2JhbGw=",
-            "U2NyZXdiYWxs",
-            "UGFsbWJhbGw="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogQm9va3M=",
-        "question": "V2hvIHdhcyB0aGUgYXV0aG9yIG9mIHRoZSAxOTU0IG5vdmVsLCAiTG9yZCBvZiB0aGUgRmxpZXMiPw==",
-        "correct_answer": "V2lsbGlhbSBHb2xkaW5n",
-        "incorrect_answers": [
-            "U3RlcGhlbiBLaW5n",
-            "Ri4gU2NvdHQgRml0emdlcmFsZA==",
-            "SHVudGVyIEZveA=="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogRmlsbQ==",
-        "question": "V2hpY2ggYWN0cmVzcyBkYW5jZWQgdGhlIHR3aXN0IHdpdGggSm9obiBUcmF2b2x0YSBpbiAnUHVscCBGaWN0aW9uJz8=",
-        "correct_answer": "VW1hIFRodXJtYW4=",
-        "incorrect_answers": [
-            "S2F0aHkgR3JpZmZpbg==",
-            "UGFtIEdyaWVy",
-            "QnJpZGdldCBGb25kYQ=="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "RW50ZXJ0YWlubWVudDogVmlkZW8gR2FtZXM=",
-        "question": "SW4gdGhlIHZpZGVvIGdhbWUgZnJhbmNoaXNlICJIYWxvIiwgd2hhdCBpcyB0aGUgVU5TQydzIG1haW4gb3Bwb3NpbmcgZmFjdGlvbiBjYWxsZWQ/",
-        "correct_answer": "VGhlIENvdmVuYW50",
-        "incorrect_answers": [
-            "VGhlIFJlY2tvbmluZw==",
-            "VGhlIFBlb3BsZXM=",
-            "VGhlIFNsYXVnaHRlcmVycw=="
-        ]
-    },
-    {
-        "type": "bXVsdGlwbGU=",
-        "difficulty": "ZWFzeQ==",
-        "category": "Q2VsZWJyaXRpZXM=",
-        "question": "V2hpY2ggY2VsZWJyaXR5IGFubm91bmNlZCBoaXMgcHJlc2lkZW5jeSBpbiAyMDE1Pw==",
-        "correct_answer": "S2FueWUgV2VzdA==",
-        "incorrect_answers": [
-            "RG9uYWxkIFRydW1w",
-            "TGVvbmFyZG8gRGlDYXByaW8=",
-            "TWlsZXkgQ3lydXM="
-        ]
-    }
-]
-const updatedResults = addIsAvailableProperty(results)
-const str = JSON.stringify(updatedResults) //for storing data on redis
+
+
+ //for storing data on redis
  
 const addQuestions=async(context:Context) =>{
-await context.redis.set('questions',str)
-for (let i = 0; i<=10;i++){
-    const newData = await context.redis.zAdd('questionNumber',{member:`${i}`,score:1}) //1 = answered and two = unanswered
-    console.log(newData)
+const questions = await service.fetchQuestion()
+const shuffledQuestions = questions && shuffleArray(questions)
+const strQuestions = JSON.stringify(shuffledQuestions)
+await context.redis.set('questions',strQuestions)
+
+for(let i =0;i<49;i++){
+ const data =  await context.redis.zAdd('questionNumber',{member:`${i}`,score:0})
+  console.log(data)
 }
+
 }
+
+//menu item for resetting the trivia
 
 // Add a menu item to the subreddit menu for instantiating the new experience post
 Devvit.addMenuItem({
@@ -195,7 +82,7 @@ Devvit.addCustomPostType({
         return <PlayPage setPage={setPage} context={_context}></PlayPage>
 
         case 'leaderboard':
-          return LeaderboardPage(_context,setPage)
+          return <LeaderboardPage context={_context} setPage={setPage} />
 
         case 'rules':
           return RulesPage(_context,setPage)

@@ -1,14 +1,30 @@
-import { Devvit, Context, useChannel, useState } from '@devvit/public-api';
+import { Devvit, Context, useChannel, useState, useAsync } from '@devvit/public-api';
+import { Attempts } from '../components/attempts.js';
 
 type RealtimeMessage = {
   payload : {question:number},
   session : string
 }
+Devvit.configure({
+  redditAPI:true,
+  redis:true
+})
 
 const mySession = Math.random().toString(36).substring(2, 10);
 
 export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
+  const { data:attempts, loading:attemptLoading} = useAsync(async() => {
+    const userData = await context.reddit.getCurrentUser()
+    const userName = userData?.username
+    return userName && await context.redis.zScore('attempts',userName+context.postId?.toString()) as any
+  })
+  
+  const { data, loading } = useAsync(async () => {
+    return await context.redis.zRange('questionNumber',0,0,{by:'score'})
+  });
 
+  
+  const progress : any = data && 50 - data.length
 
     const changePage = (page:string) => {
         setPage(page)
@@ -17,29 +33,55 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
-        <text color="black" weight="bold" size="xxlarge">40/100 Answered</text>
+        {loading&&
+        <text color="black" weight="bold" size="xxlarge">{progress}loading</text>
+        }
+        {data&&
+        <text color="black" weight="bold" size="xxlarge">{progress}/50 Answered</text>
+        }
         <spacer/>
         <vstack backgroundColor='#FFD5C6' cornerRadius='full' width='80%' border="thick" borderColor="black">
-          <hstack backgroundColor='#D93A00' width={`40%`} >
+          {loading&&
+                    <hstack backgroundColor='#D93A00' width={`0%`} >
+                    <spacer size='medium' shape='square' />
+                  </hstack>
+          }
+          
+         {data && <hstack backgroundColor='#D93A00' width={`${progress*2}%`} >
             <spacer size='medium' shape='square' />
-          </hstack>
+          </hstack>}
         </vstack>
   
         <spacer/>
         <text color="#343434" weight="bold">Theme: Films</text>
         <spacer/>
-        <hstack>
-        <icon name="activity-fill" color="#D93A00" size="large"></icon>
-          <icon name="activity-fill" color="#D93A00" size="large"></icon>
-          <icon name="activity-fill" color="#D93A00" size="large"></icon>
-          <icon name="activity-fill" color="#D93A00" size="large"></icon>
-          <icon name="activity" color="#D93A00" size="large"></icon>
-        </hstack>
+     <Attempts context={context}/>
+     <spacer/>
+     {attempts >= 5 && 
+     <text color="white">attempts will be restored in next event</text>
+     }
+     
           <spacer size="medium"/>
           
         <vstack width="100%" alignment="middle center" gap="small">
-          
-          <hstack width="260px" height="60px" alignment="middle center" >
+        {attemptLoading &&
+            <hstack width="260px" height="60px" alignment="middle center" >
+            <zstack alignment="start top">
+         {/* Shadow */}
+         <vstack width="100%" height="100%">
+           <spacer height="4px" />
+           <hstack width="100%" height="100%">
+             <spacer width="4px" />
+               <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
+           </hstack>
+         </vstack>
+             <hstack width="250px" height="50px" backgroundColor="grey" cornerRadius="full" alignment="middle center" borderColor="black" border="thick">
+                 <text color="black" size="large" weight="bold">Wait please...</text>
+             </hstack>
+           </zstack>
+           </hstack>
+          }
+          {attempts &&  <hstack width="260px" height="60px" alignment="middle center" >
          <zstack alignment="start top">
       {/* Shadow */}
       <vstack width="100%" height="100%">
@@ -49,14 +91,26 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-          <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" 
-          onPress={()=>{changePage("play")}}  
-          border="thick">
-              <text color="white" size="large" weight="bold">Play</text>
-          </hstack>
+      {attempts>=5?
+       <hstack width="250px" height="50px" backgroundColor="grey" cornerRadius="full" alignment="middle center" borderColor="black" 
+         
+       border="thick">
+         
+           <text color="white" size="large" weight="bold">Out of attempts</text>
+       </hstack>:
+       <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" 
+       onPress={()=>{if(attempts===undefined || attempts<=5){changePage("play")}}}  
+       border="thick">
+         
+           <text color="white" size="large" weight="bold">Play</text>
+       </hstack>
+       
+    }
+         
         </zstack>
             
-        </hstack>
+        </hstack>}
+         
         
        <hstack width="260px" height="60px" alignment="middle center" >
          <zstack alignment="start top">
@@ -68,7 +122,7 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-          <hstack width="250px" height="50px" backgroundColor="white" cornerRadius="full" alignment="middle center" borderColor="black" onPress={async()=>{changePage("leaderboard");const data = await context.redis.zAdd('quetionNumber',{member:'10',score:2});console.log(data)}} border="thick">
+          <hstack width="250px" height="50px" backgroundColor="white" cornerRadius="full" alignment="middle center" borderColor="black" onPress={()=>{changePage("leaderboard")}} border="thick">
               <text color="black" size="large" weight="bold">LEADERBOARD</text>
           </hstack>
         </zstack>

@@ -1,6 +1,7 @@
-import { Devvit, Context } from '@devvit/public-api';
+import { Devvit, Context, useAsync } from '@devvit/public-api';
 
 export const RulesPage = (context: Context,setPage:any) => {
+
     const changePage=(name:string)=>{
         setPage(name)
     }

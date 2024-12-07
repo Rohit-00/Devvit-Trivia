@@ -1,22 +1,18 @@
-import { Devvit, Context, useState, useAsync, useChannel } from '@devvit/public-api';
+import { Devvit, Context, useState, useAsync, useInterval } from '@devvit/public-api';
 import { Button } from '../components/button.js';
-import { ModalButton } from '../components/modalButton.js';
-import { shuffleArray } from '../utils/shuffleOptions.js';
 import OptionsList from '../components/options.js';
 import Modal from '../components/modal.js';
+import { Countdown } from '../components/countdown.js';
+import { Attempts } from '../components/attempts.js';
+import { processAttemptedQuestions } from '../utils/processAttemptedQuestions.js';
+
 
 Devvit.configure({
   realtime: true,
   redis: true,
+  redditAPI:true
 });
 
-type Question = {
-  question: string;
-  incorrect_answers: string[];
-  correct_answer: string;
-};
-
-type FormattedQuestions = Record<string, Question>;
 
 type PlayPageProps = {
   context: Context;
@@ -26,74 +22,111 @@ type PlayPageProps = {
 export const PlayPage = ({ context, setPage }: PlayPageProps) => {
   let question: string | undefined;
 
-  // Async hook to fetch the question number from Redis
-  const { data: keyData, loading: keyLoading } = useAsync(async () => {
-    const allKey = await context.redis.zRange('quetionNumber', 0, 1, { by: 'score' });
-    return allKey;
+ 
+  const { data:questionNumber, loading:questionNumberLoading } = useAsync(async () => {
+    return await context.redis.zRange('questionNumber',0,0,{by:'score'})
   });
 
-  const questionNumber: string | undefined = keyData ? keyData[0].member : undefined;
+  const {data:userQuestions} = useAsync(async () => {
+    const data  =  await context.reddit.getCurrentUser() 
+    const userName : any = data?.username
+   
+    const userData = {
+      userName : userName,
 
-  // Async hook to fetch all questions from Redis
+    }
+    return userData as any
+  })
+
+
+
+  const questionIndex : any = questionNumber && questionNumber[0].member;
+
+   questionNumber && console.log('member',questionNumber[0].member)
+
   const { data: questionsData, loading: questionsLoading, error } = useAsync(async () => {
-    return (await context.redis.get('questions')) as string;
+    return await context.redis.get('questions') as string
   });
 
-  const formattedQuestions: FormattedQuestions | undefined = questionsData ? JSON.parse(questionsData) : undefined;
 
-  question = questionNumber && formattedQuestions ? atob(formattedQuestions[questionNumber].question) : undefined;
+
+  const {data} = useAsync(
+    async () => {
+      if (!questionNumber) return null;   
+      // Use firstData in your second async operation
+      return await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:2})
+    },
+    {
+      depends: questionNumber,
+    }
+  )
+
+
+  const formattedQuestion = questionsData &&  JSON.parse(questionsData)
+
+  question = questionsData && questionIndex && atob(formattedQuestion.results[questionIndex].question)
 
   const [selected, setSelected] = useState<number | null>(null);
   const [answer, setAnswer] = useState<string>('');
+  const [checkAnswer, setCheckAnswer] = useState<string>('')
   const [modal, setModal] = useState<boolean>(false);
 
-  const changePage = (page: string) => {
-    setPage(page);
-  };
 
   // Prepare options for the question
   const allOptions =
-    questionNumber && formattedQuestions
-      ? formattedQuestions[questionNumber].incorrect_answers.concat(
-          formattedQuestions[questionNumber].correct_answer
+     questionIndex && questionsData
+      ? formattedQuestion.results[questionIndex].incorrect_answers.concat(
+          formattedQuestion.results[questionIndex].correct_answer
         )
       : [];
 
   const options: Array<{ option: string; background: string; text: string }> = [];
 
-  questionNumber &&
-    formattedQuestions &&
+  
+    questionsData &&
     allOptions.forEach((answer: string) => {
       options.push({ option: atob(answer), background: 'white', text: 'black' });
     });
 
   const handleSubmit = async () => {
-    if (
-      questionNumber &&
-      formattedQuestions &&
-      answer === atob(formattedQuestions[questionNumber].correct_answer).toString()
+    if ( 
+      questionsData && questionNumber && userQuestions &&
+      answer === atob(formattedQuestion.results[questionIndex].correct_answer)
     ) {
       setModal(true);
-      setAnswer('right');
-      try {
-        const data = await context.redis.zAdd('quetionNumber', { member: questionNumber, score: 2 });
-        console.log(data);
-      } catch (error) {
-        console.error(error);
-      }
+      setCheckAnswer('right');
+      await context.redis.zIncrBy('ranking',userQuestions.userName,1)
+      await context.redis.zIncrBy('attempts',userQuestions.userName+context.postId?.toString(),1) 
+
+      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:1})
+      
+     
     } else {
+
+      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:0})
       setModal(true);
-      setAnswer('wrong');
+      setCheckAnswer('wrong');
+      await context.redis.zIncrBy('attempts',userQuestions.userName+context.postId,1) 
+      
     }
   };
-
   return (
     <blocks>
       <zstack height="100%" width="100%">
         <vstack backgroundColor="#56CCF2" height="100%" width="100%" alignment="center" grow>
-          <spacer size="medium" />
-          <hstack alignment="end" width="90%" gap="large">
+       <Countdown handleSubmit={handleSubmit}/>
+          <spacer />
+          <hstack width="100%" alignment="middle">
+              <hstack width="30%" alignment="start">
+                <spacer/>
+                <spacer/>
+            </hstack>
+                <hstack width="40%" alignment="center">
+            <Attempts context={context} />
+              </hstack>
+          <hstack alignment="end" width="30%" >
             <zstack alignment="start top">
+              {/* Shadow */}
               <vstack width="100%" height="100%">
                 <spacer height="3px" />
                 <hstack width="100%" height="100%">
@@ -107,26 +140,19 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
                 cornerRadius="small"
                 border="thick"
                 borderColor="black"
-                onPress={() => changePage('none')}
+                onPress={()=>setPage('')}
               >
                 <icon name="close-fill" color="white" size="large"></icon>
+                
               </hstack>
             </zstack>
+            <spacer/>
           </hstack>
-
-          <hstack>
-            <icon name="activity-fill" color="#D93A00" size="large"></icon>
-            <icon name="activity-fill" color="#D93A00" size="large"></icon>
-            <icon name="activity-fill" color="#D93A00" size="large"></icon>
-            <icon name="activity-fill" color="#D93A00" size="large"></icon>
-            <icon name="activity" color="#D93A00" size="large"></icon>
-          </hstack>
-
+              
+</hstack>
           <spacer />
 
-          <text>{answer}</text>
-
-          {questionsLoading && keyLoading && (
+          {questionsLoading && (
             <text
               overflow="ellipsis"
               color="white"
@@ -140,7 +166,7 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
             </text>
           )}
 
-          {keyData && questionsData && (
+          { questionsData && (
             <text
               overflow="ellipsis"
               color="white"
@@ -155,7 +181,7 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
           )}
           <spacer />
 
-          {keyData &&
+          {
             questionsData &&
               <OptionsList
           options={options}
@@ -167,14 +193,14 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
       />}
           <spacer size="small" />
 
-          {keyData && questionsData && (
+          {questionsData && questionNumber&&(
             <Button label="Submit" background="#D93A00" textColor="white" onClick={handleSubmit} />
           )}
         </vstack>
 
         {modal && 
          <Modal
-         answer={answer}
+         answer={checkAnswer}
          onClose={() => setPage('')}
          onRetry={() => setPage('')}
          onPost={() => setPage('')}
@@ -183,4 +209,5 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
       </zstack>
     </blocks>
   );
+
 };

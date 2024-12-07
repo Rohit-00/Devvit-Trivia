@@ -10,7 +10,7 @@ class service {
     async getQuestions(context:Context) {
         const result = await context.cache(
           async () => {
-            const response = await fetch('https://opentdb.com/api.php?amount=30&category=31&difficulty=easy&type=multiple',{method:'get'});
+            const response = await fetch('https://opentdb.com/api.php?amount=1&category=11&difficulty=easy&type=multiple&encode=base64',{method:'get'});
             if (!response.ok) {
               throw Error(`HTTP error ${response.status}: ${response.statusText}`);
             }
@@ -26,6 +26,14 @@ class service {
 
   async updateAvailability(context:Context, data:any){
     await context.redis.set('quesions',data)
+  }
+
+  async fetchQuestion(){
+    const response = await fetch('https://opentdb.com/api.php?amount=50&category=11&type=multiple&encode=base64')
+    if(!response.ok){
+      throw Error(`HTTP error ${response.status}: ${response.statusText}`)
+    }
+    return await response.json()
   }
 }
 
