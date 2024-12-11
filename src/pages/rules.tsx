@@ -43,7 +43,7 @@ export const RulesPage = (context: Context,setPage:any) => {
             <spacer size="medium" />
             <vstack width="80%">
               <text color="black" size="large" weight="bold" wrap alignment="center">
-                1. Everyday there'll be 100 trivias
+                1. Everyday there'll be a certain number of questions
               </text>
               <spacer />
               <text color="black" size="large" weight="bold" wrap alignment="center">
@@ -51,7 +51,7 @@ export const RulesPage = (context: Context,setPage:any) => {
               </text>
               <spacer />
               <text color="black" size="large" weight="bold" wrap alignment="center">
-                3. Answer all of the 100 questions to complete the challenge
+                3. Answer all of the questions to complete the challenge
               </text>
             </vstack>
             <spacer />

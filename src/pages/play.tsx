@@ -5,7 +5,7 @@ import Modal from '../components/modal.js';
 import { Countdown } from '../components/countdown.js';
 import { Attempts } from '../components/attempts.js';
 import { processAttemptedQuestions } from '../utils/processAttemptedQuestions.js';
-
+import { getAttemptedQuestions } from '../components/getAttempted.js';
 
 Devvit.configure({
   realtime: true,
@@ -21,11 +21,12 @@ type PlayPageProps = {
 
 export const PlayPage = ({ context, setPage }: PlayPageProps) => {
   let question: string | undefined;
-
+   
+  const {data:eventId} = useAsync(async() => {
+    return await context.redis.get('eventId') as string //get current event
+  })
  
-  const { data:questionNumber, loading:questionNumberLoading } = useAsync(async () => {
-    return await context.redis.zRange('questionNumber',0,0,{by:'score'})
-  });
+
 
   const {data:userQuestions} = useAsync(async () => {
     const data  =  await context.reddit.getCurrentUser() 
@@ -33,38 +34,58 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
    
     const userData = {
       userName : userName,
-
     }
     return userData as any
   })
 
+  const key : string = userQuestions && eventId && 'attempts'+userQuestions.userName+eventId
 
+  const {data} = useAsync(async()=>{
+    const event = await context.redis.get('eventId')
+    const user = await context.reddit.getCurrentUser()
+    const username = user?.username
+    return await context.redis.get('attempts'+username+event) as any
+  })
+const formatted = data && JSON.parse(data)
 
-  const questionIndex : any = questionNumber && questionNumber[0].member;
-
-   questionNumber && console.log('member',questionNumber[0].member)
+  const { data:questionNumber, loading:questionNumberLoading } = useAsync(async () => {
+    return await context.redis.zRange('questionNumber',0,0,{by:'score'})
+  });
+  const isInPrevAttempts = formatted && questionNumber && formatted.filter((element:string)=>element===questionNumber[0].member)
+  const largest = formatted && Math.max(...formatted.map(Number));
+  // const questionIndex : any = data && questionNumber&& isInPrevAttempts === null || isInPrevAttempts === undefined ? questionNumber && questionNumber[0].member: questionNumber && largest ?  questionNumber[largest+1].member:questionNumber&&questionNumber[largest+1].member;
+  const questionIndex : any = questionNumber&& isInPrevAttempts && isInPrevAttempts?questionNumber && largest ?  questionNumber[largest+1].member:questionNumber&&questionNumber[largest+1].member : questionNumber && questionNumber[0].member
 
   const { data: questionsData, loading: questionsLoading, error } = useAsync(async () => {
     return await context.redis.get('questions') as string
   });
 
-
-
-  const {data} = useAsync(
+  const {data:setQuestion} = useAsync(
     async () => {
       if (!questionNumber) return null;   
-      // Use firstData in your second async operation
       return await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:2})
     },
     {
-      depends: questionNumber,
+      depends: data,
     }
   )
 
 
+//  const {data} =  useAsync(async() => {
+//   const data = await context.redis.get(key) as string
+//   if(data){
+//   return data as string}
+//   else return null
+//  }, 
+//  {
+//   depends: { key, userQuestions }
+// })
+
+// data && console.log(data)
+
   const formattedQuestion = questionsData &&  JSON.parse(questionsData)
 
-  question = questionsData && questionIndex && atob(formattedQuestion.results[questionIndex].question)
+  question = questionIndex && formattedQuestion && atob(formattedQuestion.results[questionIndex].question)
 
   const [selected, setSelected] = useState<number | null>(null);
   const [answer, setAnswer] = useState<string>('');
@@ -88,33 +109,38 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
       options.push({ option: atob(answer), background: 'white', text: 'black' });
     });
 
+  const postData = formattedQuestion && questionIndex &&{ 
+    question : atob(formattedQuestion.results[questionIndex].question),
+    answer : atob(formattedQuestion.results[questionIndex].correct_answer)
+  }
+
   const handleSubmit = async () => {
     if ( 
-      questionsData && questionNumber && userQuestions &&
+      questionsData && questionNumber && userQuestions && eventId && key &&
       answer === atob(formattedQuestion.results[questionIndex].correct_answer)
     ) {
       setModal(true);
       setCheckAnswer('right');
-      await context.redis.zIncrBy('ranking',userQuestions.userName,1)
-      await context.redis.zIncrBy('attempts',userQuestions.userName+context.postId?.toString(),1) 
-
-      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:1})
-      
+      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:1});
+      await context.redis.zIncrBy('ranking',userQuestions.userName,1);
+      await context.redis.zIncrBy('attempts',userQuestions.userName+eventId,1);
      
     } else {
-
-      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:0})
       setModal(true);
       setCheckAnswer('wrong');
-      await context.redis.zIncrBy('attempts',userQuestions.userName+context.postId,1) 
-      
+      const allAttempts = processAttemptedQuestions(formatted,questionIndex)
+      await context.redis.zAdd('questionNumber',{member:`${questionIndex}`,score:0})
+      await context.redis.set(key,JSON.stringify(allAttempts));
+      await context.redis.zIncrBy('attempts',userQuestions.userName+eventId,1) //attempts
     }
   };
   return (
     <blocks>
       <zstack height="100%" width="100%">
         <vstack backgroundColor="#56CCF2" height="100%" width="100%" alignment="center" grow>
-       <Countdown handleSubmit={handleSubmit}/>
+      {questionsLoading&&<vstack height="5px" width='100%' />}
+       {questionsData&&<Countdown handleSubmit={handleSubmit}/>}
+
           <spacer />
           <hstack width="100%" alignment="middle">
               <hstack width="30%" alignment="start">
@@ -203,7 +229,22 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
          answer={checkAnswer}
          onClose={() => setPage('')}
          onRetry={() => setPage('')}
-         onPost={() => setPage('')}
+         onPost={async() => {
+          const subreddit = await context.reddit.getCurrentSubreddit()
+          const post = await context.reddit.submitPost({
+            title: 'My devvit post',
+            subredditName: subreddit.name,
+            // The preview appears while the post loads
+            preview: (
+              <vstack height="100%" width="100%" alignment="middle center">
+                <text size="large">Loading ...</text>
+              </vstack>
+            ),
+          });
+          await context.redis.set(post.id, JSON.stringify(postData));
+          setPage('')}
+        
+        }
        />
         }
       </zstack>

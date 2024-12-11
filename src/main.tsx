@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, useState , Context, useAsync } from '@devvit/public-api';
+import { Devvit, useState , Context, useAsync, FormField } from '@devvit/public-api';
 import { RulesPage } from './pages/rules.js';
 import { LeaderboardPage } from './pages/leaderboard.js';
 import { PlayPage } from './pages/play.js';
@@ -7,6 +7,11 @@ import { MenuPage } from './pages/menu.js';
 import service from './service/service.js';
 import { addIsAvailableProperty } from './utils/addIsAvailableField.js';
 import { shuffleArray } from './utils/shuffleOptions.js';
+import { themes } from './utils/themes.js';
+import { generateRandomId } from './utils/generateEventID.js';
+import { Button } from './components/button.js';
+import { SmallButton } from './components/smallButton.js';
+import { CustomPost } from './pages/customPost.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -14,23 +19,58 @@ Devvit.configure({
   http:true
 });
 
+let theme : string
 
- //for storing data on redis
- 
-const addQuestions=async(context:Context) =>{
-const questions = await service.fetchQuestion()
-const shuffledQuestions = questions && shuffleArray(questions)
-const strQuestions = JSON.stringify(shuffledQuestions)
-await context.redis.set('questions',strQuestions)
+const addQuestions=async(context:Context,theme:string) =>{
+  const eventId = generateRandomId(12)
+  await context.redis.set('eventId',eventId)
+  const questions = await service.fetchQuestion({theme:theme})
+  const shuffledQuestions = questions && shuffleArray(questions)
+  const strQuestions = JSON.stringify(shuffledQuestions)
+  await context.redis.set('questions',strQuestions)
+  
+  for(let i =0;i<49;i++){
+   const data =  await context.redis.zAdd('questionNumber',{member:`${i}`,score:0})
+  }
+  
+  }
 
-for(let i =0;i<49;i++){
- const data =  await context.redis.zAdd('questionNumber',{member:`${i}`,score:0})
-  console.log(data)
-}
 
-}
+  const themeSelector : FormField = {
+    type: 'select',
+    name: 'theme',
+    label: 'Select the theme',
+    required: true,
+    options: themes,
+  };
+  
+const myForm = Devvit.createForm(
+  {
+    fields: [ 
+      themeSelector
+    ],
+  },
+  (event, context) => {
+    // onSubmit handler
 
-//menu item for resetting the trivia
+    addQuestions(context,event.values.theme[0]) 
+    const selectedOption = themes.find(option => option.value === event.values.theme[0]);
+    const selectedLabel = selectedOption ? selectedOption.label : 'Unknown';
+    context.redis.set('theme',selectedLabel)
+    context.ui.showToast({ text: 'New event started!' });
+  }
+);
+
+// menu Item to start a new Event
+Devvit.addMenuItem({
+  label: 'Start a new event',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    ui.showForm(myForm)
+  },
+})
 
 // Add a menu item to the subreddit menu for instantiating the new experience post
 Devvit.addMenuItem({
@@ -38,14 +78,14 @@ Devvit.addMenuItem({
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    addQuestions(context) //make it a cron job after the api gets approved
+    const { reddit, ui } = context; 
     const subreddit = await reddit.getCurrentSubreddit();
     await reddit.submitPost({
-      title: 'My devvit post',
+      title: 'My trivia post',
       subredditName: subreddit.name,
       // The preview appears while the post loads
       preview: (
+
         <vstack height="100%" width="100%" alignment="middle center">
           <text size="large">Loading ...</text>
         </vstack>
@@ -58,7 +98,7 @@ Devvit.addMenuItem({
 
 // Add a post type definition
 Devvit.addCustomPostType({
-  name: 'Experience Post',
+  name: 'Trivia Post',
   height: 'tall',
   render: (_context) => {
     const {redis} = _context;
@@ -68,15 +108,18 @@ Devvit.addCustomPostType({
     const { data: currentPost, loading: postLoading } = useAsync(
 
       async () => {
-      return await redis.get(_context.postId!) as any;
+      return await redis.get(_context.postId!) as string;
       
     });
-    if(currentPost){
-      return (<text>same post rendering different data. Yay! :)</text>)
-    }else{
 
+    const formattedData = currentPost && JSON.parse(currentPost)
+   
+  
       const [page,setPage] = useState('')
-
+      if(currentPost){
+        return <CustomPost formattedData={formattedData} context={_context}/>
+      }
+      else{
       switch(page) {
         case 'play': 
         return <PlayPage setPage={setPage} context={_context}></PlayPage>
@@ -88,17 +131,17 @@ Devvit.addCustomPostType({
           return RulesPage(_context,setPage)
 
         case 'menu':
-          return MenuPage(_context,setPage,results)
+          return MenuPage(_context,setPage)
 
         default:
-          return MenuPage(_context,setPage,results)
+          return MenuPage(_context,setPage)
       }
      
-     
+    }
     }
 
     
   },
-});
+);
 
 export default Devvit;

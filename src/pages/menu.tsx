@@ -1,5 +1,6 @@
-import { Devvit, Context, useChannel, useState, useAsync } from '@devvit/public-api';
+import { Devvit, Context, useChannel, useState, useAsync, KVStore } from '@devvit/public-api';
 import { Attempts } from '../components/attempts.js';
+import service from '../service/service.js';
 
 type RealtimeMessage = {
   payload : {question:number},
@@ -10,26 +11,62 @@ Devvit.configure({
   redis:true
 })
 
-const mySession = Math.random().toString(36).substring(2, 10);
+type Obj = {
+  username:string,
+  attempts:number,
+  score:number
+}
+export const MenuPage = (context: Context,setPage:any) => {
 
-export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
   const { data:attempts, loading:attemptLoading} = useAsync(async() => {
     const userData = await context.reddit.getCurrentUser()
-    const userName = userData?.username
-    return userName && await context.redis.zScore('attempts',userName+context.postId?.toString()) as any
+    const eventId = await context.redis.get('eventId')
+    const userName : any = userData?.username
+    const score = userName && await context.redis.zScore('ranking',userName)
+    const attempts =  userName && eventId && await context.redis.zScore('attempts',userName+eventId) as any
+
+    const obj = {
+      username : userName,
+      attempts : attempts,
+      score : score
+    }
+    return obj as Obj
   })
+
   
   const { data, loading } = useAsync(async () => {
     return await context.redis.zRange('questionNumber',0,0,{by:'score'})
   });
 
-  
+  const {data: theme} = useAsync(async() => {
+    return await context.redis.get('theme') as string
+  })
+
   const progress : any = data && 50 - data.length
 
     const changePage = (page:string) => {
         setPage(page)
     }
+    
+  // const {data:flair} = useAsync(async() => {
+  //   return await context.kvStore.get(`${attempts?.username}:flare`) as any
+  // }) 
 
+  // if(flair===undefined || flair === null){
+
+  //   if (attempts?.score !== undefined) {
+  //     if (attempts.score > 1 && attempts.score < 29) {
+  //       console.log("You're bronze");
+  //     } else if (attempts.score > 30 && attempts.score < 59) {
+  //       console.log("You're silver");
+  //     } else if (attempts.score > 60 && attempts.score < 99) {
+  //       service.assignUserFlair(context,attempts?.username)
+  //     }
+  //   }
+    
+  // }else{
+  //   console.log("so you have a user flaire")
+  // }
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
@@ -53,21 +90,21 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
         </vstack>
   
         <spacer/>
-        <text color="#343434" weight="bold">Theme: Films</text>
+        <text color="#343434" weight="bold">Theme: {theme&&theme}</text>
         <spacer/>
      <Attempts context={context}/>
      <spacer/>
-     {attempts >= 5 && 
+     {attempts && attempts?.attempts >= 5 && 
      <text color="white">attempts will be restored in next event</text>
      }
      
           <spacer size="medium"/>
           
         <vstack width="100%" alignment="middle center" gap="small">
-        {attemptLoading &&
+        {/* {attemptLoading &&
             <hstack width="260px" height="60px" alignment="middle center" >
             <zstack alignment="start top">
-         {/* Shadow */}
+         
          <vstack width="100%" height="100%">
            <spacer height="4px" />
            <hstack width="100%" height="100%">
@@ -80,8 +117,8 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
              </hstack>
            </zstack>
            </hstack>
-          }
-          {attempts &&  <hstack width="260px" height="60px" alignment="middle center" >
+          } */}
+      <hstack width="260px" height="60px" alignment="middle center" >
          <zstack alignment="start top">
       {/* Shadow */}
       <vstack width="100%" height="100%">
@@ -91,7 +128,7 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-      {attempts>=5?
+      {attempts && attempts?.attempts>=5?
        <hstack width="250px" height="50px" backgroundColor="grey" cornerRadius="full" alignment="middle center" borderColor="black" 
          
        border="thick">
@@ -99,17 +136,17 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
            <text color="white" size="large" weight="bold">Out of attempts</text>
        </hstack>:
        <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" 
-       onPress={()=>{if(attempts===undefined || attempts<=5){changePage("play")}}}  
+       onPress={()=>{changePage("play")}}  
        border="thick">
          
-           <text color="white" size="large" weight="bold">Play</text>
+           <text color="white" size="large" weight="bold">PLAY</text>
        </hstack>
        
     }
          
         </zstack>
             
-        </hstack>}
+        </hstack>
          
         
        <hstack width="260px" height="60px" alignment="middle center" >
@@ -144,22 +181,6 @@ export const MenuPage = (context: Context,setPage:any,questions:any[]) => {
         </zstack>
         </hstack>
           <spacer size="large"/>
-  
-        <text color="black" weight="bold"  
-        onPress={async()=>{
-          const subreddit = await context.reddit.getCurrentSubreddit()
-          const post = await context.reddit.submitPost({
-            title: 'My devvit post',
-            subredditName: subreddit.name,
-            // The preview appears while the post loads
-            preview: (
-              <vstack height="100%" width="100%" alignment="middle center">
-                <text size="large">Loading ...</text>
-              </vstack>
-            ),
-          });
-          await context.redis.set(post.id, "yes");
-        }}>Level: 5</text>
   
         </vstack>
       </vstack>

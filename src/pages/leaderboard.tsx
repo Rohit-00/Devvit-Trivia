@@ -4,23 +4,6 @@ Devvit.configure({
   redis: true,
   redditAPI:true
 });
-const leaderboard = [
-  { name: 'Anurag', rank: 1, score: 890 },
-  { name: 'Zaid', rank: 2, score: 890 },
-  { name: 'Rohit', rank: 3, score: 890 },
-  { name: 'Loki', rank: 4, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-  { name: 'Poki', rank: 5, score: 890 },
-];
 
 type LeaderboardPageProps = {
   context: Context;
@@ -37,6 +20,11 @@ export const LeaderboardPage = ({ context, setPage }: LeaderboardPageProps) => {
   const { data: leaderboard, loading:leaderboardLoading } = useAsync(async () => {
     return await context.redis.zRange('ranking',0,-1,{by:'rank',reverse:true})
   });
+
+  const {data:eventId} = useAsync(async()=>{
+    return await context.redis.get('eventId') as string
+  })
+ 
  
   const {data: currentUserRank, loading:currentUserRankLoading} = useAsync(async () => {
     const userData  =  await context.reddit.getCurrentUser() 

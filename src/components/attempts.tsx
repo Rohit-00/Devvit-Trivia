@@ -12,7 +12,8 @@ export const Attempts = ({context}:{context:Context}) => {
     const { data:attempts } = useAsync(async() => {
         const userData = await context.reddit.getCurrentUser()
         const userName = userData?.username
-        return userName && await context.redis.zScore('attempts',userName+context.postId?.toString()) as any
+        const eventId = await context.redis.get('eventId')
+        return userName && eventId && await context.redis.zScore('attempts',userName+eventId) as any
       })
     const remainingAttempts = 5-attempts
 

@@ -6,7 +6,7 @@ interface ButtonProps {
   label: string;
   background: string;
   textColor: string;
-  onClick: () => void; // Function that handles the button click
+  onClick?: () => void; // Function that handles the button click
 }
 
 // Button component with type safety

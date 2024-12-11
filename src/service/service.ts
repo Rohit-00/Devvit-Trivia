@@ -1,4 +1,5 @@
-import { Context, Devvit, useState } from '@devvit/public-api';
+import { Context, Devvit, SetFlairOptions, useState } from '@devvit/public-api';
+import { bronze } from '../utils/userFlairs.js';
 
 Devvit.configure({
     redis: true,
@@ -6,6 +7,9 @@ Devvit.configure({
 
   });
   
+type FetchQuestionsProps = {
+  theme:string
+}
 class service {
     async getQuestions(context:Context) {
         const result = await context.cache(
@@ -28,12 +32,24 @@ class service {
     await context.redis.set('quesions',data)
   }
 
-  async fetchQuestion(){
-    const response = await fetch('https://opentdb.com/api.php?amount=50&category=11&type=multiple&encode=base64')
+  async fetchQuestion({theme}:FetchQuestionsProps){
+    const response = await fetch(`https://opentdb.com/api.php?amount=50&category=${theme}&type=multiple&encode=base64`)
     if(!response.ok){
       throw Error(`HTTP error ${response.status}: ${response.statusText}`)
     }
     return await response.json()
+  }
+
+  async assignUserFlair(context:Context,username:string){
+      context.reddit.setUserFlair(
+        {
+          subredditName: "test_s0b",
+          username: username,
+          text: "Gold",
+          backgroundColor: "#FFD700", 
+          textColor: "dark",        
+      }
+      )
   }
 }
 
