@@ -52,7 +52,8 @@ class service {
           username: username,
           text: "Gold",
           backgroundColor: "#FFD700", 
-          textColor: "dark",        
+          textColor: "dark",   
+               
       }
       )
   }
@@ -61,10 +62,8 @@ class service {
     context.reddit.setUserFlair(
       {
         subredditName: "test_s0b",
-        username: username,
-        text: "Bronze",
-        backgroundColor: "#D85A32", 
-        textColor: "dark",        
+        username: username,    
+        flairTemplateId:'a6b1eeee-b8b1-11ef-8ce8-a6c7b4407cbb' 
     }
     )
   }
@@ -73,9 +72,7 @@ class service {
       {
         subredditName: "test_s0b",
         username: username,
-        text: "Silver",
-        backgroundColor: "#CECECE", 
-        textColor: "dark",        
+        flairTemplateId:'a6b1eeee-b8b1-11ef-8ce8-a6c7b4407cbb'      
     }
     )
   }
@@ -84,9 +81,7 @@ class service {
       {
         subredditName: "test_s0b",
         username: username,
-        text: "Gold",
-        backgroundColor: "#FFD700", 
-        textColor: "dark",        
+        flairTemplateId:'35119e32-b8b2-11ef-b019-06fec2d3db1c'      
     }
     )
   }
@@ -95,9 +90,7 @@ class service {
       {
         subredditName: "test_s0b",
         username: username,
-        text: "Diamond",
-        backgroundColor: "#3AD8FF", 
-        textColor: "dark",        
+        flairTemplateId:'41a7047a-b8b2-11ef-94fc-d66f776345a2'      
     }
     )
   }

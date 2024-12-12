@@ -21,28 +21,28 @@ export const AssignFlairs = ({context,attempts}:AssignFlairsProps) => {
     }) 
 
     if(attempts.username !== 'blood_lust097'){   //Mod
-        if (attempts.score >= 1 && attempts.score <= 29) {
+        if (attempts.score >= 1 && attempts.score <= 9) {
             if (!flair) {
                 service.assignBronzeFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Bronze')
               } else {
                 console.log("Already have a flair",flair);
               }
-        } else if (attempts.score >= 30 && attempts.score <= 59) {
+        } else if (attempts.score >= 10 && attempts.score <= 19) {
             if (flair==="Bronze") {
                 service.assignSilverFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Silver')
               } else {
                 console.log("Already have a flair",flair);
               }
-        } else if (attempts.score >= 60 && attempts.score <= 89) {
+        } else if (attempts.score >= 20 && attempts.score <= 29) {
             if (flair==="Silver") {
                 service.assignGoldFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Gold')
               } else {
                 console.log("Already have a flair",flair);
               }
-        } else if (attempts.score >= 90) {
+        } else if (attempts.score >= 30) {
             if (flair==="Gold") {
                 service.assignDiamondFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Diamond')
