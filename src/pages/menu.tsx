@@ -1,6 +1,7 @@
 import { Devvit, Context, useChannel, useState, useAsync, KVStore } from '@devvit/public-api';
 import { Attempts } from '../components/attempts.js';
 import service from '../service/service.js';
+import { AssignFlairs } from '../components/assignFlairs.js';
 
 type RealtimeMessage = {
   payload : {question:number},
@@ -48,25 +49,9 @@ export const MenuPage = (context: Context,setPage:any) => {
         setPage(page)
     }
     
-  // const {data:flair} = useAsync(async() => {
-  //   return await context.kvStore.get(`${attempts?.username}:flare`) as any
-  // }) 
+ 
+   
 
-  // if(flair===undefined || flair === null){
-
-  //   if (attempts?.score !== undefined) {
-  //     if (attempts.score > 1 && attempts.score < 29) {
-  //       console.log("You're bronze");
-  //     } else if (attempts.score > 30 && attempts.score < 59) {
-  //       console.log("You're silver");
-  //     } else if (attempts.score > 60 && attempts.score < 99) {
-  //       service.assignUserFlair(context,attempts?.username)
-  //     }
-  //   }
-    
-  // }else{
-  //   console.log("so you have a user flaire")
-  // }
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
@@ -181,8 +166,8 @@ export const MenuPage = (context: Context,setPage:any) => {
         </zstack>
         </hstack>
           <spacer size="large"/>
-  
         </vstack>
+        {attempts && <AssignFlairs context={context} attempts={attempts}/>}
       </vstack>
 
             )

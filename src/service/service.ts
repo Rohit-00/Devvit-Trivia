@@ -10,6 +10,11 @@ Devvit.configure({
 type FetchQuestionsProps = {
   theme:string
 }
+
+type AssignFlairProps = {
+  context:Context,
+  username:string
+}
 class service {
     async getQuestions(context:Context) {
         const result = await context.cache(
@@ -40,7 +45,7 @@ class service {
     return await response.json()
   }
 
-  async assignUserFlair(context:Context,username:string){
+  async assignUserFlair({context,username}:AssignFlairProps){
       context.reddit.setUserFlair(
         {
           subredditName: "test_s0b",
@@ -51,6 +56,53 @@ class service {
       }
       )
   }
+
+  async assignBronzeFlair({context,username}:AssignFlairProps){
+    context.reddit.setUserFlair(
+      {
+        subredditName: "test_s0b",
+        username: username,
+        text: "Bronze",
+        backgroundColor: "#D85A32", 
+        textColor: "dark",        
+    }
+    )
+  }
+  async assignSilverFlair({context,username}:AssignFlairProps){
+    context.reddit.setUserFlair(
+      {
+        subredditName: "test_s0b",
+        username: username,
+        text: "Silver",
+        backgroundColor: "#CECECE", 
+        textColor: "dark",        
+    }
+    )
+  }
+  async assignGoldFlair({context,username}:AssignFlairProps){
+    context.reddit.setUserFlair(
+      {
+        subredditName: "test_s0b",
+        username: username,
+        text: "Gold",
+        backgroundColor: "#FFD700", 
+        textColor: "dark",        
+    }
+    )
+  }
+  async assignDiamondFlair({context,username}:AssignFlairProps){
+    context.reddit.setUserFlair(
+      {
+        subredditName: "test_s0b",
+        username: username,
+        text: "Diamond",
+        backgroundColor: "#3AD8FF", 
+        textColor: "dark",        
+    }
+    )
+  }
+
+
 }
 
 export default new service
