@@ -113,7 +113,7 @@ export const MenuPage = (context: Context,setPage:any) => {
             <hstack height={"50px"} width={'250px'} backgroundColor={'black'} cornerRadius="full"/>
         </hstack>
       </vstack>
-      {attempts && attempts?.attempts>=40?
+      {attempts && attempts?.attempts>=5?
        <hstack width="250px" height="50px" backgroundColor="grey" cornerRadius="full" alignment="middle center" borderColor="black" 
          
        border="thick">
@@ -165,8 +165,8 @@ export const MenuPage = (context: Context,setPage:any) => {
           </hstack>
         </zstack>
         </hstack>
-          <spacer size="large"/>
         </vstack>
+
         {attempts && <AssignFlairs context={context} attempts={attempts}/>}
       </vstack>
 
