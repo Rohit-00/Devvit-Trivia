@@ -12,6 +12,7 @@ import { generateRandomId } from './utils/generateEventID.js';
 import { Button } from './components/button.js';
 import { SmallButton } from './components/smallButton.js';
 import { CustomPost } from './pages/customPost.js';
+import { Badges } from './pages/badges.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -132,6 +133,9 @@ Devvit.addCustomPostType({
 
         case 'menu':
           return MenuPage(_context,setPage)
+          
+        case 'badge':
+          return <Badges context={_context} setPage={setPage} />
 
         default:
           return MenuPage(_context,setPage)
