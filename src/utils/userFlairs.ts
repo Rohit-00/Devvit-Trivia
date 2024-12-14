@@ -1,4 +1,4 @@
-import { SetFlairOptions, SetUserFlairOptions } from "@devvit/public-api";
+import { SetUserFlairOptions } from "@devvit/public-api";
 
 export const bronze : SetUserFlairOptions = {
     subredditName: "yourSubredditName",

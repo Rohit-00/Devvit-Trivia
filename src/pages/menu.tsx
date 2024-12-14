@@ -169,6 +169,7 @@ export const MenuPage = (context: Context,setPage:any) => {
         <spacer size='medium'/>
         <vstack height={'100px'} onPress={()=>setPage("badge")}>
         {attempts && <AssignFlairs context={context} attempts={attempts}/>}
+        <vstack height="1px" width='100%' backgroundColor='black'/>
         </vstack>
       </vstack>
 
