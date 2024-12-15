@@ -21,47 +21,50 @@ export const AssignFlairs = ({context,attempts}:AssignFlairsProps) => {
     }) 
 
     if(attempts.username !== 'blood_lust097'){   //Mod
-        if (attempts.score >= 1 && attempts.score <= 9) {
+        if (attempts.score >= 0 && attempts.score <= 9) {
             if (!flair) {
                 service.assignBronzeFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Bronze')
               } else {
-                console.log("Already have a flair",flair);
+  
               }
         } else if (attempts.score >= 10 && attempts.score <= 19) {
             if (flair==="Bronze") {
                 service.assignSilverFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Silver')
               } else {
-                console.log("Already have a flair",flair);
+                
               }
         } else if (attempts.score >= 20 && attempts.score <= 29) {
             if (flair==="Silver") {
                 service.assignGoldFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Gold')
               } else {
-                console.log("Already have a flair",flair);
+            
               }
         } else if (attempts.score >= 30) {
             if (flair==="Gold") {
                 service.assignDiamondFlair({context:context,username:attempts.username})
                 context.redis.set(`${attempts?.username}:flare`,'Diamond')
               } else {
-                console.log("Already have a flair",flair);
+          
               }
             }
         }
         return (       
          
-          
             <vstack alignment="center middle">
-            <spacer/>
+              
+          {flair && <vstack alignment="center middle">
           <image
           url={`${flair&&flair}.png`}
           imageWidth={30}
           imageHeight={30}
           description="Rank Badge"/>
-          <text color="black" weight="bold">{flair&&flair}-&gt;</text>
+          <hstack><text color="black" weight="bold">{flair&&flair}</text><icon name="caret-right" color="black"/></hstack>
+          </vstack>
+          }
+          {!flair&&<vstack><text color="black" weight="bold">Ranks</text></vstack>}
           </vstack>
     
         

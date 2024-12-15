@@ -24,8 +24,6 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
         return await context.redis.zScore('ranking',username) as any
        })
     
-    const progress = score && score % 10 * 10
-    console.log(progress)
     return (
         <blocks>
             <vstack backgroundColor="#56CCF2" height="100%" alignment="center middle" grow>

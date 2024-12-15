@@ -36,22 +36,19 @@ export const MenuPage = (context: Context,setPage:any) => {
 
   
   const { data, loading } = useAsync(async () => {
-    return await context.redis.zRange('questionNumber',0,0,{by:'score'})
+    return await context.redis.zRange('questionNumber',1,2,{by:'score'})
   });
 
   const {data: theme} = useAsync(async() => {
     return await context.redis.get('theme') as string
   })
 
-  const progress : any = data && 50 - data.length
+  const progress : any = data && (data.length/30)*100
 
     const changePage = (page:string) => {
         setPage(page)
     }
     
- 
-   
-
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
@@ -59,7 +56,7 @@ export const MenuPage = (context: Context,setPage:any) => {
         <text color="black" weight="bold" size="xxlarge">{progress}loading</text>
         }
         {data&&
-        <text color="black" weight="bold" size="xxlarge">{progress}/50 Answered</text>
+        <text color="black" weight="bold" size="xxlarge">{data&&data.length}/30 Answered</text>
         }
         <spacer/>
         <vstack backgroundColor='#FFD5C6' cornerRadius='full' width='80%' border="thick" borderColor="black">
@@ -69,7 +66,7 @@ export const MenuPage = (context: Context,setPage:any) => {
                   </hstack>
           }
           
-         {data && <hstack backgroundColor='#D93A00' width={`${progress*2}%`} >
+         {data && <hstack backgroundColor='#D93A00' width={`${progress}%`} >
             <spacer size='medium' shape='square' />
           </hstack>}
         </vstack>
@@ -169,7 +166,6 @@ export const MenuPage = (context: Context,setPage:any) => {
         <spacer size='medium'/>
         <vstack height={'100px'} onPress={()=>setPage("badge")}>
         {attempts && <AssignFlairs context={context} attempts={attempts}/>}
-        <vstack height="1px" width='100%' backgroundColor='black'/>
         </vstack>
       </vstack>
 

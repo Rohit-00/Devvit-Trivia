@@ -5,7 +5,8 @@ import { Button } from "../components/button.js"
 type PostProps = {
     formattedData : {
         question:string,
-        answer:string
+        answer:string,
+        avatar:string
     }
     context:Context
 }
@@ -13,7 +14,12 @@ export const CustomPost = ({formattedData,context}:PostProps)=> {
     return(
         <blocks>
         <vstack backgroundColor="#56CCF2" height="100%" alignment="center middle" >
-         
+        <image
+          url={formattedData.avatar}
+          imageWidth={200}
+          imageHeight={200}
+          description="Rank Badge"/>
+
            <text
            overflow="ellipsis"
            color="white"

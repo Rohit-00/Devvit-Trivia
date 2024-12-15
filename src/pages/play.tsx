@@ -31,9 +31,11 @@ export const PlayPage = ({ context, setPage }: PlayPageProps) => {
   const {data:userQuestions} = useAsync(async () => {
     const data  =  await context.reddit.getCurrentUser() 
     const userName : any = data?.username
+    const avatar = await context.reddit.getSnoovatarUrl(userName)
    
     const userData = {
       userName : userName,
+      avatar : avatar
     }
     return userData as any
   })
@@ -51,6 +53,10 @@ const formatted = data && JSON.parse(data)
   const { data:questionNumber, loading:questionNumberLoading } = useAsync(async () => {
     return await context.redis.zRange('questionNumber',0,0,{by:'score'})
   });
+
+  const {data:answeredQuestions} = useAsync(async() => {
+    return await context.redis.zRange('questionNumber',1,2,{by:'score'})
+  })
   const isInPrevAttempts = formatted && questionNumber && formatted.filter((element:string)=>element===questionNumber[0].member)
   const largest = formatted && Math.max(...formatted.map(Number));
   // const questionIndex : any = data && questionNumber&& isInPrevAttempts === null || isInPrevAttempts === undefined ? questionNumber && questionNumber[0].member: questionNumber && largest ?  questionNumber[largest+1].member:questionNumber&&questionNumber[largest+1].member;
@@ -109,9 +115,10 @@ const formatted = data && JSON.parse(data)
       options.push({ option: atob(answer), background: 'white', text: 'black' });
     });
 
-  const postData = formattedQuestion && questionIndex &&{ 
+  const postData = formattedQuestion && questionIndex && userQuestions  &&{ 
     question : atob(formattedQuestion.results[questionIndex].question),
-    answer : atob(formattedQuestion.results[questionIndex].correct_answer)
+    answer : atob(formattedQuestion.results[questionIndex].correct_answer),
+    avatar : userQuestions.avatar
   }
 
   const handleSubmit = async () => {
@@ -231,8 +238,9 @@ const formatted = data && JSON.parse(data)
          onRetry={() => setPage('')}
          onPost={async() => {
           const subreddit = await context.reddit.getCurrentSubreddit()
+          
           const post = await context.reddit.submitPost({
-            title: 'My devvit post',
+            title: `${answeredQuestions && answeredQuestions.length + 1}/30 - answered by ${userQuestions.userName}`,
             subredditName: subreddit.name,
             // The preview appears while the post loads
             preview: (
@@ -242,8 +250,8 @@ const formatted = data && JSON.parse(data)
             ),
           });
           await context.redis.set(post.id, JSON.stringify(postData));
-          setPage('')}
-        
+          setPage('')
+          }
         }
        />
         }
