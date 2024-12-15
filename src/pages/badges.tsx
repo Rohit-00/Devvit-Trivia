@@ -83,10 +83,10 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
                                 />
                             </hstack>
                             <hstack width={responsiveResult(context, 25, 33, 33)}>
-                                <text color="black" weight="bold">30+</text>
+                                <text color="black" weight="bold" alignment="center" width="100%">30+</text>
                             </hstack>
                             <hstack width={responsiveResult(context, 42, 33, 33)}>
-                                <text color="black" weight="bold">Diamond</text>
+                                <text color="black" weight="bold"  alignment="end" width="100%">Diamond</text>
                             </hstack>
                         </hstack>
 
@@ -102,10 +102,10 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
                                 />
                             </hstack>
                             <hstack width={responsiveResult(context, 25, 33, 33)}>
-                                <text color="black" weight="bold">20-29</text>
+                                <text color="black" weight="bold" alignment="center" width="100%">20-29</text>
                             </hstack>
                             <hstack width={responsiveResult(context, 42, 33, 33)}>
-                                <text color="black" weight="bold">Gold</text>
+                                <text color="black" weight="bold"  alignment="end" width="100%">Gold</text>
                             </hstack>
                         </hstack>
 
@@ -121,10 +121,10 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
                                 />
                             </hstack>
                             <hstack width={responsiveResult(context, 25, 33, 33)}>
-                                <text color="black" weight="bold">10-19</text>
+                                <text color="black" weight="bold" alignment="center" width="100%">10-19</text>
                             </hstack>
                             <hstack width={responsiveResult(context, 42, 33, 33)}>
-                                <text color="black" weight="bold">Silver</text>
+                                <text color="black" weight="bold"  alignment="end" width="100%">Silver</text>
                             </hstack>
                         </hstack>
 
@@ -140,10 +140,10 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
                                 />
                             </hstack>
                             <hstack width={responsiveResult(context, 25, 33, 33)}>
-                                <text color="black" weight="bold">1-9</text>
+                                <text color="black" weight="bold" alignment="center" width="100%">1-9</text>
                             </hstack>
                             <hstack width={responsiveResult(context, 42, 33, 33)}>
-                                <text color="black" weight="bold">Bronze</text>
+                                <text color="black" weight="bold"  alignment="end" width="100%">Bronze</text>
                             </hstack>
                         </hstack>
 
