@@ -2,6 +2,7 @@ import { Devvit, Context, useChannel, useState, useAsync, KVStore } from '@devvi
 import { Attempts } from '../components/attempts.js';
 import service from '../service/service.js';
 import { AssignFlairs } from '../components/assignFlairs.js';
+import responsiveResult from '../utils/responsiveValues.js';
 
 type RealtimeMessage = {
   payload : {question:number},
@@ -52,14 +53,22 @@ export const MenuPage = (context: Context,setPage:any) => {
     return ( 
 
         <vstack alignment='center middle' height="100%"  backgroundColor="#56CCF2" gap="none" >
+          <spacer size='large'/>
+
+         <image
+          url={`TriviaTimeLogo2.png`}
+          imageWidth={responsiveResult(context,300,500,500)}
+          imageHeight={100}
+          description="Rank Badge"/>       
+
         {loading&&
         <text color="black" weight="bold" size="xxlarge">{progress}loading</text>
         }
         {data&&
         <text color="black" weight="bold" size="xxlarge">{data&&data.length}/30 Answered</text>
         }
-        <spacer/>
-        <vstack backgroundColor='#FFD5C6' cornerRadius='full' width='80%' border="thick" borderColor="black">
+        
+        <vstack backgroundColor='white' cornerRadius='full' width='80%' border="thick" borderColor="black">
           {loading&&
                     <hstack backgroundColor='#D93A00' width={`0%`} >
                     <spacer size='medium' shape='square' />
@@ -70,7 +79,7 @@ export const MenuPage = (context: Context,setPage:any) => {
             <spacer size='medium' shape='square' />
           </hstack>}
         </vstack>
-  
+     
         <spacer/>
         <text color="#343434" weight="bold">Theme: {theme&&theme}</text>
         <spacer/>
@@ -163,7 +172,7 @@ export const MenuPage = (context: Context,setPage:any) => {
         </zstack>
         </hstack>
         </vstack>
-        <spacer size='medium'/>
+        <spacer size='small'/>
         <vstack height={'100px'} onPress={()=>setPage("badge")}>
         {attempts && <AssignFlairs context={context} attempts={attempts}/>}
         </vstack>

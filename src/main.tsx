@@ -20,7 +20,7 @@ Devvit.configure({
   http:true
 });
 
-let theme : string
+
 
 const addQuestions=async(context:Context,theme:string) =>{
   const eventId = generateRandomId(12)
@@ -82,11 +82,10 @@ Devvit.addMenuItem({
     const { reddit, ui } = context; 
     const subreddit = await reddit.getCurrentSubreddit();
     await reddit.submitPost({
-      title: 'My trivia post',
+      title: 'Trivia Event',  
       subredditName: subreddit.name,
       // The preview appears while the post loads
       preview: (
-
         <vstack height="100%" width="100%" alignment="middle center">
           <text size="large">Loading ...</text>
         </vstack>
