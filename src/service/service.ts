@@ -96,6 +96,7 @@ class service {
   }
 
   async eventCompletion({context,username}:AssignFlairProps){
+    const user = await context.reddit.getCurrentUser()
     await context.reddit.sendPrivateMessageAsSubreddit({
       fromSubredditName:'test_s0b',
       to:username,
