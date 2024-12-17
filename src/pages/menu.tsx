@@ -65,8 +65,11 @@ export const MenuPage = (context: Context,setPage:any) => {
         <text color="black" weight="bold" size="xxlarge">{progress}loading</text>
         }
         {data&&
+
         <text color="black" weight="bold" size="xxlarge">{data&&data.length}/30 Answered</text>
+        
         }
+        {data?.length===30&&<text color='black'>Yay!! The event is completed</text>}
         
         <vstack backgroundColor='white' cornerRadius='full' width='80%' border="thick" borderColor="black">
           {loading&&

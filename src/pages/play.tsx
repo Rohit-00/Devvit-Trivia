@@ -60,7 +60,7 @@ const formatted = data && JSON.parse(data)
   const isInPrevAttempts = formatted && questionNumber && formatted.filter((element:string)=>element===questionNumber[0].member)
   const largest = formatted && Math.max(...formatted.map(Number));
   // const questionIndex : any = data && questionNumber&& isInPrevAttempts === null || isInPrevAttempts === undefined ? questionNumber && questionNumber[0].member: questionNumber && largest ?  questionNumber[largest+1].member:questionNumber&&questionNumber[largest+1].member;
-  const questionIndex : any = questionNumber&& isInPrevAttempts && isInPrevAttempts?questionNumber && largest ?  questionNumber[largest+1].member:questionNumber&&questionNumber[largest+1].member : questionNumber && questionNumber[0].member
+  const questionIndex : any = questionNumber&& isInPrevAttempts && isInPrevAttempts?questionNumber && largest ?  questionNumber[largest===49?largest-1:largest+1].member:questionNumber&&questionNumber[largest+1].member : questionNumber && questionNumber[0].member
 
   const { data: questionsData, loading: questionsLoading, error } = useAsync(async () => {
     return await context.redis.get('questions') as string
@@ -253,6 +253,7 @@ const formatted = data && JSON.parse(data)
             ),
           });
           await context.redis.set(post.id, JSON.stringify(postData));
+          await context.reddit.approve(post.id)
           setPage('')
           }
         }
