@@ -65,7 +65,7 @@ var addQuestions = function (context, theme) { return __awaiter(void 0, void 0, 
                 return [4 /*yield*/, service_js_1["default"].fetchQuestion({ theme: theme })];
             case 2:
                 questions = _a.sent();
-                shuffledQuestions = questions && shuffleOptions_js_1.shuffleArray(questions);
+                shuffledQuestions = questions && shuffleOptions_js_1.processQuestionData(questions);
                 strQuestions = JSON.stringify(shuffledQuestions);
                 return [4 /*yield*/, context.redis.set('questions', strQuestions)];
             case 3:

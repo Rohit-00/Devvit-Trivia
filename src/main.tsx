@@ -6,7 +6,7 @@ import { PlayPage } from './pages/play.js';
 import { MenuPage } from './pages/menu.js';
 import service from './service/service.js';
 import { addIsAvailableProperty } from './utils/addIsAvailableField.js';
-import { shuffleArray } from './utils/shuffleOptions.js';
+import { processQuestionData, shuffleArray } from './utils/shuffleOptions.js';
 import { themes } from './utils/themes.js';
 import { generateRandomId } from './utils/generateEventID.js';
 import { Button } from './components/button.js';
@@ -26,7 +26,7 @@ const addQuestions=async(context:Context,theme:string) =>{
   const eventId = generateRandomId(12)
   await context.redis.set('eventId',eventId)
   const questions = await service.fetchQuestion({theme:theme})
-  const shuffledQuestions = questions && shuffleArray(questions)
+  const shuffledQuestions = questions && processQuestionData(questions)
   const strQuestions = JSON.stringify(shuffledQuestions)
   await context.redis.set('questions',strQuestions)
   

@@ -65,7 +65,6 @@ const formatted = data && JSON.parse(data)
   const { data: questionsData, loading: questionsLoading, error } = useAsync(async () => {
     return await context.redis.get('questions') as string
   });
-
   const {data:setQuestion} = useAsync(
     async () => {
       if (!questionNumber) return null;   
@@ -91,7 +90,7 @@ const formatted = data && JSON.parse(data)
 
   const formattedQuestion = questionsData &&  JSON.parse(questionsData)
 
-  question = questionIndex && formattedQuestion && atob(formattedQuestion.results[questionIndex].question)
+  question = questionIndex && formattedQuestion && atob(formattedQuestion[questionIndex].question)
 
   const [selected, setSelected] = useState<number | null>(null);
   const [answer, setAnswer] = useState<string>('');
@@ -100,31 +99,31 @@ const formatted = data && JSON.parse(data)
 
 
   // Prepare options for the question
-  const allOptions =
-     questionIndex && questionsData
-      ? formattedQuestion.results[questionIndex].incorrect_answers.concat(
-          formattedQuestion.results[questionIndex].correct_answer
-        )
-      : [];
-
+  // const allOptions =
+  //    questionIndex && questionsData
+  //     ? formattedQuestion.results[questionIndex].incorrect_answers.concat(
+  //         formattedQuestion.results[questionIndex].correct_answer
+  //       )
+  //     : [];
+  const allOptions = formattedQuestion && questionIndex && questionsData && formattedQuestion[questionIndex].options 
   const options: Array<{ option: string; background: string; text: string }> = [];
 
   
-    questionsData &&
+  formattedQuestion && questionIndex && questionsData && 
     allOptions.forEach((answer: string) => {
       options.push({ option: atob(answer), background: 'white', text: 'black' });
     });
 
   const postData = formattedQuestion && questionIndex && userQuestions  &&{ 
-    question : atob(formattedQuestion.results[questionIndex].question),
-    answer : atob(formattedQuestion.results[questionIndex].correct_answer),
+    question : atob(formattedQuestion[questionIndex].question),
+    answer : atob(formattedQuestion[questionIndex].correct_answer),
     avatar : userQuestions.avatar
   }
 
   const handleSubmit = async () => {
     if ( 
       questionsData && questionNumber && userQuestions && eventId && key &&
-      answer === atob(formattedQuestion.results[questionIndex].correct_answer)
+      answer === atob(formattedQuestion[questionIndex].correct_answer)
     ) {
       setModal(true);
       setCheckAnswer('right');

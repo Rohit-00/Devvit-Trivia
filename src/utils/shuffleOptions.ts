@@ -24,7 +24,7 @@ export const  shuffleArray =(array: string[]): string[] => {
   return array;
 }
 
-function processQuestionData(data: ApiResponse): ProcessedQuestion[] {
+export function processQuestionData(data: ApiResponse): ProcessedQuestion[] {
   return data.results.map((question) => {
     // Combine correct answer with incorrect answers
     const options = question.incorrect_answers
