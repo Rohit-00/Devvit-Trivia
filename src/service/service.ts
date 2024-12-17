@@ -48,7 +48,7 @@ class service {
   async assignUserFlair({context,username}:AssignFlairProps){
      await context.reddit.setUserFlair(
         {
-          subredditName: "test_s0b",
+          subredditName: "TriviaTimeEvent",
           username: username,
           text: "Gold",
           backgroundColor: "#FFD700", 
@@ -61,36 +61,36 @@ class service {
   async assignBronzeFlair({context,username}:AssignFlairProps){
     await context.reddit.setUserFlair(
       {
-        subredditName: "test_s0b",
+        subredditName: "TriviaTimeEvent",
         username: username,    
-        flairTemplateId:'a6b1eeee-b8b1-11ef-8ce8-a6c7b4407cbb' 
+        flairTemplateId:'7b352748-bc6e-11ef-9d43-ba4e6f12b4a1' 
     }
     )
   }
   async assignSilverFlair({context,username}:AssignFlairProps){
     await context.reddit.setUserFlair(
       {
-        subredditName: "test_s0b",
+        subredditName: "TriviaTimeEvent",
         username: username,
-        flairTemplateId:'a6b1eeee-b8b1-11ef-8ce8-a6c7b4407cbb'      
+        flairTemplateId:'82848160-bc6e-11ef-970b-7aedae1e1874'      
     }
     )
   }
   async assignGoldFlair({context,username}:AssignFlairProps){
     await context.reddit.setUserFlair(
       {
-        subredditName: "test_s0b",
+        subredditName: "TriviaTimeEvent",
         username: username,
-        flairTemplateId:'35119e32-b8b2-11ef-b019-06fec2d3db1c'      
+        flairTemplateId:'89ba4348-bc6e-11ef-ab7b-6626ad36523a'      
     }
     )
   }
   async assignDiamondFlair({context,username}:AssignFlairProps){
     await context.reddit.setUserFlair(
       {
-        subredditName: "test_s0b",
+        subredditName: "TriviaTimeEvent",
         username: username,
-        flairTemplateId:'41a7047a-b8b2-11ef-94fc-d66f776345a2'      
+        flairTemplateId:'905ba854-bc6e-11ef-8002-9e0a18c4c37c'      
     }
     )
   }
@@ -98,7 +98,7 @@ class service {
   async eventCompletion({context,username}:AssignFlairProps){
     const user = await context.reddit.getCurrentUser()
     await context.reddit.sendPrivateMessageAsSubreddit({
-      fromSubredditName:'test_s0b',
+      fromSubredditName:'TriviaTimeEvent',
       to:username,
       subject:"Event Completed!!",
       text:"Thanks for contributing to the trivia event."

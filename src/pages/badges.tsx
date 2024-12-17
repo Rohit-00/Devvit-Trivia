@@ -16,7 +16,7 @@ export const Badges = ({ context, setPage }: BadgesProps) => {
           const user= await context.reddit.getCurrentUser()
           const username = user?.username
           return username && await context.redis.get(`${username}:flare`) as any
-        }) 
+        })  
 
        const {data:score} = useAsync(async()=> {
         const user= await context.reddit.getCurrentUser()

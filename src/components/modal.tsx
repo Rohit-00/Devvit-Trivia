@@ -24,14 +24,15 @@ const Modal = ({ answer, onClose, onRetry, onPost }: ModalProps) => (
           </text>
         </hstack>
         <text wrap alignment="center" weight="bold" color='white'>
-          {answer === 'wrong' ? 'Give it another shot' : 'Would you like to post and brag about it?'}
+          {answer === 'wrong' ? 'Give it another shot' : 'An appreciation post is being posted!! :D'}
         </text>
       </vstack>
       <hstack height="33%" width="100%" alignment="bottom center">
-        <ModalButton label='Menu' background='white' textColor='black' onClick={onClose}/>
         
-        {answer !== 'wrong' && 
-        <ModalButton label='Post' background='#D93A00' textColor='white' onClick={onPost}/>    
+        
+        {answer !== 'wrong' ?
+        <ModalButton label='Menu' background='#D93A00' textColor='white' onClick={onPost}/>:
+<ModalButton label='Menu' background='white' textColor='black' onClick={onClose}/>
         }
       </hstack>
     </vstack>
