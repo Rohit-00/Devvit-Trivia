@@ -113,10 +113,9 @@ Devvit.addCustomPostType({
     });
 
     const formattedData = currentPost && JSON.parse(currentPost)
-   
   
       const [page,setPage] = useState('')
-      if(currentPost){
+      if( currentPost && currentPost){
         return <CustomPost formattedData={formattedData} context={_context}/>
       }
       else{

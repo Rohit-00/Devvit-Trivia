@@ -45,7 +45,7 @@ export const MenuPage = (context: Context,setPage:any) => {
   })
 
   const progress : any = data && (data.length/30)*100
-
+ 
     const changePage = (page:string) => {
         setPage(page)
     }
@@ -127,7 +127,7 @@ export const MenuPage = (context: Context,setPage:any) => {
            <text color="white" size="large" weight="bold">Out of attempts</text>
        </hstack>:
        <hstack width="250px" height="50px" backgroundColor="#F84301" cornerRadius="full" alignment="middle center" borderColor="black" 
-       onPress={()=>{changePage("play")}}  
+       onPress={()=>{attempts && changePage("play")}}  
        border="thick">
          
            <text color="white" size="large" weight="bold">PLAY</text>

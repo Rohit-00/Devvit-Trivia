@@ -58,11 +58,10 @@ export const AssignFlairs = ({context,attempts}:AssignFlairsProps) => {
           {flair && <vstack alignment="center middle">
           <image
           url={`${flair&&flair}.png`}
-          imageWidth={30}
-          imageHeight={30}
+          imageWidth={40}
+          imageHeight={40}
           description="Rank Badge"/>
-          <hstack><text color="black" weight="bold">{flair&&flair}</text></hstack>
-          <hstack height="1px" width="100%" backgroundColor="black"/>
+
           </vstack>
           }
           {!flair&&<vstack><text color="black" weight="bold">Ranks</text></vstack>}

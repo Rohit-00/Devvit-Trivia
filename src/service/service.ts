@@ -46,7 +46,7 @@ class service {
   }
 
   async assignUserFlair({context,username}:AssignFlairProps){
-      context.reddit.setUserFlair(
+     await context.reddit.setUserFlair(
         {
           subredditName: "test_s0b",
           username: username,
@@ -59,7 +59,7 @@ class service {
   }
 
   async assignBronzeFlair({context,username}:AssignFlairProps){
-    context.reddit.setUserFlair(
+    await context.reddit.setUserFlair(
       {
         subredditName: "test_s0b",
         username: username,    
@@ -68,7 +68,7 @@ class service {
     )
   }
   async assignSilverFlair({context,username}:AssignFlairProps){
-    context.reddit.setUserFlair(
+    await context.reddit.setUserFlair(
       {
         subredditName: "test_s0b",
         username: username,
@@ -77,7 +77,7 @@ class service {
     )
   }
   async assignGoldFlair({context,username}:AssignFlairProps){
-    context.reddit.setUserFlair(
+    await context.reddit.setUserFlair(
       {
         subredditName: "test_s0b",
         username: username,
@@ -86,7 +86,7 @@ class service {
     )
   }
   async assignDiamondFlair({context,username}:AssignFlairProps){
-    context.reddit.setUserFlair(
+    await context.reddit.setUserFlair(
       {
         subredditName: "test_s0b",
         username: username,
@@ -95,7 +95,14 @@ class service {
     )
   }
 
-
+  async eventCompletion({context,username}:AssignFlairProps){
+    await context.reddit.sendPrivateMessageAsSubreddit({
+      fromSubredditName:'test_s0b',
+      to:username,
+      subject:"Event Completed!!",
+      text:"Thanks for contributing to the trivia event."
+    })
+  }
 }
 
 export default new service
