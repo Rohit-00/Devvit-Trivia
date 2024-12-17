@@ -173,7 +173,7 @@ const formatted = data && JSON.parse(data)
                 cornerRadius="small"
                 border="thick"
                 borderColor="black"
-                onPress={()=>setPage('')}
+                onPress={()=>handleSubmit()}
               >
                 <icon name="close-fill" color="white" size="large"></icon>
                 
