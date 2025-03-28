@@ -20,6 +20,7 @@ type PlayPageProps = {
 };
 
 export const PlayPage = ({ context, setPage }: PlayPageProps) => {
+  const [hasExecuted, setHasExecuted] = useState(false)
   let question: string | undefined;
    
   const {data:eventId} = useAsync(async() => {
@@ -172,7 +173,14 @@ const formatted = data && JSON.parse(data)
                 cornerRadius="small"
                 border="thick"
                 borderColor="black"
-                onPress={()=>handleSubmit()}
+                onPress={()=>{
+
+                  if(!hasExecuted){
+                    handleSubmit();
+                    setHasExecuted(true);
+                  }
+                  return;
+                  }}
               >
                 <icon name="close-fill" color="white" size="large"></icon>
                 
