@@ -11,3 +11,6 @@ A community trivia game where players get 5 attempts each and a common goal of a
 
 Visit our [subreddit](https://www.reddit.com/r/TriviaTimeEvent/)
 to play. Make sure you have a reddit account
+
+## Result
+This project was my submission for the reddit games hackathon which I didn't win :( 
